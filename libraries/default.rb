@@ -7,6 +7,27 @@ require 'resolv'
 
 module Kagent 
   module Helpers
+    def setup_aws()
+      bash 'setup_aws' do
+        user 'ubuntu'
+        cwd ::File.dirname("/srv")
+        code <<-EOH
+          sudo umount /dev/xvdb
+          sudo mkdir /srv/hops
+          sudo chown ubuntu:ubuntu /srv/hops
+          sudo mount /dev/xvdb /srv/hops
+
+          sudo mv /tmp /tmp.old
+          sudo mkdir /tmp
+          sudo mount /dev/xvdc /tmp
+          sudo chmod 1777 /tmp
+          sudo cp -r /tmp.old /tmp
+          sudo touch "/srv/complete"
+        EOH
+        not_if { ::File.exist?("/srv/complete") }
+      end
+    end
+
 # If the public-ip is empty, return a private-ip instead    
     def my_public_ip()
       if node.attribute?("public_ips") == false || node["public_ips"].empty?
@@ -21,19 +42,24 @@ module Kagent
       return dns_lookup(ip)
     end
 
-    def hops_groups()
-      group node["kagent"]["certs_group"] do
-        action :create
-        not_if "getent group #{node["kagent"]["certs_group"]}"
-      end
-    end
-
     def my_private_ip()
       if node.attribute?("private_ips") == false || node["private_ips"].empty?      
          Chef::Log.error "Could not find a private_ip for this host"
          raise ArgumentError, "No private_ip found", node['host']
       end
       return node["private_ips"][0]
+    end
+
+    def hops_groups() 
+      group node["kagent"]["group"] do
+        action :create
+        not_if "getent group #{node["kagent"]["group"]}"
+      end
+
+      group node["kagent"]["certs_group"] do
+        action :create
+        not_if "getent group #{node["kagent"]["certs_group"]}"
+      end
     end
 
     def valid_cookbook(cookbook)
