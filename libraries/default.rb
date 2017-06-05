@@ -36,6 +36,18 @@ module Kagent
       return node["private_ips"][0]
     end
 
+    def hops_groups() 
+      group node["kagent"]["group"] do
+        action :create
+        not_if "getent group #{node["kagent"]["group"]}"
+      end
+
+      group node["kagent"]["certs_group"] do
+        action :create
+        not_if "getent group #{node["kagent"]["certs_group"]}"
+      end
+    end
+
     def valid_cookbook(cookbook)
       if node.attribute?(cookbook) == false 
         Chef::Log.error "Invalid cookbook name: #{cookbook}"

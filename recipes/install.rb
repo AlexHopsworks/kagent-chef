@@ -60,15 +60,7 @@ include_recipe "poise-python"
 # Now using packages in ubuntu/centos.
 #include_recipe "openssl::upgrade"
 
-group node["kagent"]["group"] do
-  action :create
-  not_if "getent group #{node["kagent"]["group"]}"
-end
-
-group node["kagent"]["certs_group"] do
-  action :create
-  not_if "getent group #{node["kagent"]["certs_group"]}"
-end
+hops_groups()
 
 user node["kagent"]["user"] do
   gid node["kagent"]["group"]
