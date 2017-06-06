@@ -7,6 +7,27 @@ require 'resolv'
 
 module Kagent 
   module Helpers
+    def setup_aws()
+      bash 'setup_aws' do
+        user 'ubuntu'
+        cwd ::File.dirname("/srv")
+        code <<-EOH
+          sudo umount /dev/xvdb
+          sudo mkdir /srv/hops
+          sudo chown ubuntu:ubuntu /srv/hops
+          sudo mount /dev/xvdb /srv/hops
+
+          sudo mv /tmp /tmp.old
+          sudo mkdir /tmp
+          sudo mount /dev/xvdc /tmp
+          sudo chmod 1777 /tmp
+          sudo cp -r /tmp.old /tmp
+          sudo touch "/srv/complete"
+        EOH
+        not_if { ::File.exist?("/srv/complete") }
+      end
+    end
+
 # If the public-ip is empty, return a private-ip instead    
     def my_public_ip()
       if node.attribute?("public_ips") == false || node["public_ips"].empty?
