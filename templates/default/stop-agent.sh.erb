@@ -7,6 +7,6 @@ if [ $? -ne 0 ]; then
 else
     echo "Agent's process-id is $PID. Killing the agent..."
     kill $PID > /dev/null 2>&1    
-    kill $PID
+#    kill $PID
 fi
-exit $?
+#exit $?

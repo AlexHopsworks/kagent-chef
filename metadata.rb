@@ -165,3 +165,7 @@ attribute "certs/dir",
 attribute "hops/dir",
           :description => "Installation directory for Hops",
           :type => 'string'
+
+attribute "jupyter/python",
+          :description => "'true' (default) to enable the python interpreter, 'false' to disable it (more secure). ",
+          :type => 'string'

@@ -33,7 +33,16 @@ if [ "$OP" == "CREATE" ] ; then
     su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda create -n $PROJECT python=$PYTHON_VERSION -y -q $OFFLINE"
     su $EXEC_AS_USER -c "export HADOOP_HOME=$HADOOP_DIR && <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install hdfscontents"
     su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install hopsutil"
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install tfspark"        
+    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install tfspark"
+
+    if [ "<%= @jupyter_python %>" == "true" ] ; then
+	sudo <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/python  -m ipykernel install --prefix=<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/ --name "python-${PROJECT}"
+    fi
+    if [ $? -eq 0 ] ; then
+	sudo jupyter-kernelspec install <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/share/jupyter/kernels/python-${PROJECT}
+    else
+      echo "Problem creating Python jupyter kernel for this project ${PROJECT}"
+    fi	
 elif [ "$OP" == "LIST_ENVS" ] ; then
   su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda env list --json > /tmp/conda_envs.json"    
 elif [ "$OP" == "LIST" ] ; then
@@ -46,7 +55,10 @@ elif [ "$OP" == "REMOVE" ] ; then
        echo "Cannot remove environment that doesn't exist"
        exit 0
     fi
-  su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda-env remove -n $PROJECT -y -q"
+    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda-env remove -n $PROJECT -y -q"
+    if [ "<%= @jupyter_python %>" == "true" ] ; then    
+	sudo jupyter-kernelspec remove -y python-${PROJECT}
+    fi
 else
     exit -1
 fi

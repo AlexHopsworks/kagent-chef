@@ -366,6 +366,13 @@ if node["vagrant"] === "true" || node["vagrant"] == true
     end
 end
 
+jupyter_python = "true"
+if node.attribute?("jupyter") 
+  if node["jupyter"].attribute?("python") 
+    jupyter_python = "#{node['jupyter']['python']}".downcase
+  end
+end
+
 
 template "#{node["kagent"]["home"]}/bin/conda.sh" do
   source "conda.sh.erb"
@@ -381,6 +388,9 @@ template "#{node["kagent"]["home"]}/bin/anaconda_env.sh" do
   group node["kagent"]["group"]
   mode "755"
   action :create
+  variables({
+        :jupyter_python => jupyter_python
+  })
 end
 
 

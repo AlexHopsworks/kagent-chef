@@ -53,9 +53,12 @@ action :systemd_reload do
   
   bash "start-if-not-running-#{new_resource.name}" do
     user "root"
+    ignore_failure true
     code <<-EOH
+     systemctl stop #{new_resource.name}
      systemctl daemon-reload
-     systemctl restart #{new_resource.name}
+     systemctl reset-failed
+     systemctl start #{new_resource.name}
     EOH
   end
 

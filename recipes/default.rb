@@ -45,14 +45,18 @@ if node[:systemd] == "true"
     group "root"
     mode 0755
     if node["services"]["enabled"] == "true"
-    notifies :enable, resources(:service => service_name)
-end
+     notifies :enable, resources(:service => service_name)
+    end
     notifies :restart, "service[#{service_name}]", :delayed
   end
 
 # Creating a symlink causes systemctl enable to fail with too many symlinks
 # https://github.com/systemd/systemd/issues/3010
 
+  kagent_config service_name do
+    action :systemd_reload
+  end
+  
 else # sysv
 
   service "#{service_name}" do
@@ -196,7 +200,6 @@ if node["kagent"]["test"] == false
 end
 
 
-execute "service kagent stop"
 execute "rm -f #{node["kagent"]["pid_file"]}"
 
 case node['platform_family']
