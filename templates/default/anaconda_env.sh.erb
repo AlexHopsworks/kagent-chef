@@ -30,19 +30,37 @@ if [ "$OP" == "CREATE" ] ; then
     if [ $? -eq 0 ] ; then 
        exit 0
     fi
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda create -n $PROJECT python=$PYTHON_VERSION -y -q $OFFLINE"
-    su $EXEC_AS_USER -c "export HADOOP_HOME=$HADOOP_DIR; export HADOOP_VERSION=<%= @hadoop_version %>; <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install hdfscontents"
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install hopsutil"
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install tfspark"
 
-    if [ "<%= @jupyter_python %>" == "true" ] ; then
-	sudo <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/python  -m ipykernel install --prefix=<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/ --name "python-${PROJECT}"
+    CREATE_PYTHON_KERNEL=1
+    if [[ $PYTHON_VERSION =~ .*X ]] ; then
+       PYTHON_VERSION=${PYTHON_VERSION::-1} # removes the 'X' at the end of the version
+       CREATE_PYTHON_KERNEL=0
     fi
-    if [ $? -eq 0 ] ; then
-	sudo jupyter-kernelspec install <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/share/jupyter/kernels/python-${PROJECT}
-    else
-      echo "Problem creating Python jupyter kernel for this project ${PROJECT}"
-    fi	
+    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda create -n $PROJECT python=$PYTHON_VERSION -y -q $OFFLINE"
+    HADOOP_VERSION=$(echo $HADOOP_DIR | awk -F- '{print $NF}')
+    echo "Hadoop dir is $HADOOP_DIR"
+    echo "Hadoop version is $HADOOP_VERSION"
+    export HADOOP_CONF_DIR=${HADOOP_DIR}/hadoop/etc
+    export HADOOP_HOME=$HADOOP_DIR 
+    su $EXEC_AS_USER -c "export HADOOP_VERSION=$HADOOP_VERSION; export HADOOP_CONF_DIR=${HADOOP_DIR}/hadoop/etc; export HADOOP_HOME=$HADOOP_DIR ; <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install pydoop" 
+
+    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade hopsutil" 
+    export PY=$(echo $PYTHON_VERSION | sed 's/\.//g') 
+    sudo <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade <%= node["conda"]["base_dir"] %>/pkgs/tensorflow-<%= node['tensorflow']['version'] %>-cp${PY}-cp${PY}mu-manylinux1_x86_64.whl
+    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade tfspark" 
+
+    if [ "<%= @jupyter_python %>" == "true" ] ; then 
+      if [ $CREATE_PYTHON_KERNEL -eq 1 ] ; then 
+        sudo <%= node["conda"]["base_dir"] %>/bin/python -m ipykernel install --prefix=<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/ --name "python-${PROJECT}"
+        #sudo <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/python -m ipykernel install --prefix=<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/ --name "python-${PROJECT}"
+        if [ $? -eq 0 ] ; then
+          sudo jupyter-kernelspec install <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/share/jupyter/kernels/python-${PROJECT}
+        else
+          echo "Problem creating Python jupyter kernel for this project ${PROJECT}"
+        fi	
+     fi
+   fi
+
 elif [ "$OP" == "LIST_ENVS" ] ; then
   su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda env list --json > /tmp/conda_envs.json"    
 elif [ "$OP" == "LIST" ] ; then

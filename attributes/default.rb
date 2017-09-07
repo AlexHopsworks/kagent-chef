@@ -1,3 +1,5 @@
+include_attribute "conda"
+
 default["install"]["dir"]                          = ""
 default["install"]["user"]                         = ""
 default["install"]["ssl"]                          = "false"
@@ -16,7 +18,7 @@ default["kagent"]["base_dir"]                      = "#{node["kagent"]["dir"]}/k
 default["kagent"]["home"]                          = "#{node["kagent"]["dir"]}/kagent-#{node["kagent"]["version"]}"
 default["kagent"]["conda_enabled"]                 = "true"
 
-default["conda"]["default_libs"]                   = %w{ numpy hdfs3 scikit-learn matplotlib pandas tensorflow }
+default["conda"]["default_libs"]                   = %w{ numpy hdfs3 scikit-learn matplotlib pandas }
 
 default["kagent"]["enabled"]                       = "true"
 
@@ -109,3 +111,7 @@ default["smtp"]["gmail.placeholder"]               = "http://snurran.sics.se/hop
 default["services"]["enabled"]                     = "true"
 
 default["certs"]["dir"]                            = node["install"]["dir"].empty? ? node["kagent"]["dir"] + "/certs-dir" : node["install"]["dir"] + "/certs-dir"
+
+default["tensorflow"]["version"]                   = "1.3.0"
+default["tensorflow"]["py36"]["url"]               = node["download_url"] + "/tensorflow-" + node["tensorflow"]["version"] + "-cp36-cp36m-manylinux1_x86_64.whl"
+default["tensorflow"]["py27"]["url"]               = node["download_url"] + "/tensorflow-" + node["tensorflow"]["version"] + "-cp27-cp27mu-manylinux1_x86_64.whl"

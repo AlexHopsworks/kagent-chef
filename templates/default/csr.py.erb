@@ -90,7 +90,10 @@ class Register():
                 jData = json.loads(resp.content)
                 cert = jData['pubAgentCert']
                 caCert = jData['caPubCert']
-
+                hadoopHome = jData['hadoopHome']                
+                config.set('agent', 'hadoop-home', hadoopHome)
+                with open(CONFIG_FILE, 'wb') as configfile:
+                    config.write(configfile)
                 cert_dir = os.path.dirname(os.path.abspath(__file__))
                 with open(join(cert_dir, CA_FILE), "wt") as f:
                     f.write(caCert)

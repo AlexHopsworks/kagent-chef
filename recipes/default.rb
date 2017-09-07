@@ -1,21 +1,5 @@
 service_name = "kagent"
 
-case node[:platform_family]
-when "rhel"
-     package "pyOpenSSL" do
-      action :install
-     end
-     package "python-netifaces" do
-      action :install
-     end
-
-when "debian"
-     package "python-openssl" do
-      action :install
-     end
-end
-
-include_recipe "kagent::anaconda"
 
 case node[:platform]
 when "ubuntu"
@@ -161,11 +145,12 @@ end
 
 hops_dir=node['install']['dir']
 if node.attribute?("hops") && node["hops"].attribute?("dir") 
-  hops_dir=node['hops']['dir']
+# Use versioned directory for hops
+  hops_dir=node['hops']['dir'] + "/hadoop-2.8.2"
 end
 if hops_dir == "" 
  # Guess that it is the default value
- hops_dir = "/srv/hops/hadoop"
+ hops_dir = "/srv/hops/hadoop-2.8.2"
 end
 #
 # use :create_if_missing, as if there is a failure during/after the csr.py program,
