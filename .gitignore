@@ -6,6 +6,6 @@ nohup.out
 # Bundler
 bin/*
 .bundle/*
-
+*#
 .kitchen/
 Berksfile.lock
