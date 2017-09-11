@@ -93,6 +93,45 @@ group node["kagent"]["certs_group"] do
 end
 
 
+# ubuntu python-mysqldb package install only works if we first run "apt-get update; apt-get upgrade"
+if platform?("ubuntu", "debian") 
+  package "python-mysqldb" do
+   options "--force-yes"
+   action :install
+  end
+elsif platform?("centos","redhat","fedora")
+  package "MySQL-python" do
+    action :install
+  end
+else
+  python_package "MySQL-python" do
+    action :install
+  end
+end
+
+# bash "fix_permissions" do
+#   user "root"
+#   ignore_failure true
+#   code <<-EOF
+#     chown -R #{node['kagent']['user']} /home/#{node['kagent']['user']}/.cache
+#   EOF
+# end
+
+# bash "install_python" do
+#   user "root"
+#   ignore_failure true
+#   code <<-EOF
+#   sudo -H pip install inifile
+#   sudo -H pip install requests
+#   sudo -H pip install bottle
+#   sudo -H pip install CherryPy
+#   sudo -H pip install pyOpenSSL
+#   sudo -H pip install netifaces
+#   sudo -H pip install IPy
+#  EOF
+# end
+
+
 inifile_gem = "inifile-2.0.2.gem"
 cookbook_file "/tmp/#{inifile_gem}" do
   source "#{inifile_gem}"
@@ -217,7 +256,6 @@ bash "install_python" do
   not_if "test -f /tmp/.python_libs_installed"
 end
 
-
 bash "make_gemrc_file" do
   user "root"
   code <<-EOF
@@ -225,11 +263,6 @@ bash "make_gemrc_file" do
  EOF
   not_if "test -f ~/.python_libs_installed"
 end
-
-# gem_package "inifile" do
-#   source "/tmp/#{inifile_gem}"
-#   action :install
-# end
 
 chef_gem "inifile" do
   action :install
@@ -264,8 +297,6 @@ link node["kagent"]["base_dir"] do
   to node["kagent"]["home"]
 end
 
-
-
 directory "#{node["kagent"]["base_dir"]}/bin" do
   owner node["kagent"]["user"]
   group node["kagent"]["group"]
@@ -298,8 +329,6 @@ my_hostname = node['hostname']
 if node["kagent"].attribute?("hostname") then
  my_hostname = node["kagent"]["hostname"]
 end
-
-
 
 template "#{node["kagent"]["base_dir"]}/agent.py" do
   source "agent.py.erb"
@@ -423,19 +452,19 @@ template "/etc/sudoers.d/kagent" do
 end  
 
 
-case node[:platform_family]
-when "rhel"
-     package "pyOpenSSL" do
-      action :install
-     end
-     package "python-netifaces" do
-      action :install
-     end
+# case node[:platform_family]
+# when "rhel"
+#      package "pyOpenSSL" do
+#       action :install
+#      end
+#      package "python-netifaces" do
+#       action :install
+#      end
 
-when "debian"
-     package "python-openssl" do
-      action :install
-     end
-end
+# when "debian"
+#      package "python-openssl" do
+#       action :install
+#      end
+# end
 
 include_recipe "kagent::anaconda"
