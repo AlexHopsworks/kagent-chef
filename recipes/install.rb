@@ -117,64 +117,24 @@ end
 #   EOF
 # end
 
-# bash "install_python" do
-#   user "root"
-#   ignore_failure true
-#   code <<-EOF
-#   sudo -H pip install inifile
-#   sudo -H pip install requests
-#   sudo -H pip install bottle
-#   sudo -H pip install CherryPy
-#   sudo -H pip install pyOpenSSL
-#   sudo -H pip install netifaces
-#   sudo -H pip install IPy
-#  EOF
-# end
+bash "install_python" do
+  user 'root'
+  ignore_failure true
+  code <<-EOF
+  sudo -H pip install inifile
+  sudo -H pip install requests
+  sudo -H pip install bottle
+  sudo -H pip install CherryPy
+  sudo -H pip install pyOpenSSL
+  sudo -H pip install netifaces
+  sudo -H pip install IPy
+  sudo -H pip install pexpect
+  sudo -H pip install cherrypy-wsgiserver
+  sudo -H pip install wsgiserver
 
-
-inifile_gem = "inifile-2.0.2.gem"
-cookbook_file "/tmp/#{inifile_gem}" do
-  source "#{inifile_gem}"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-  action :create_if_missing
+ EOF
 end
 
-requests="requests-1.0.3"
-cookbook_file "/tmp/#{requests}.tar.gz" do
-  source "#{requests}.tar.gz"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-  action :create_if_missing
-end
-
-bottle="bottle-0.11.4"
-cookbook_file "/tmp/#{bottle}.tar.gz" do
-  source "#{bottle}.tar.gz"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-  action :create_if_missing
-end
-
-cherry="CherryPy-3.2.2"
-cookbook_file "/tmp/#{cherry}.tar.gz" do
-  source "#{cherry}.tar.gz"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-end
-
-openSsl="pyOpenSSL-0.13"
-cookbook_file "/tmp/#{openSsl}.tar.gz" do
-  source "#{openSsl}.tar.gz"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-  action :create_if_missing
-end
 
 # ubuntu python-mysqldb package install only works if we first run "apt-get update; apt-get upgrade"
 if platform?("ubuntu", "debian") 
@@ -190,70 +150,6 @@ else
   python_package "MySQL-python" do
     action :install
   end
-end
-
-netifaces="netifaces-0.8"
-cookbook_file "/tmp/#{netifaces}.tar.gz" do
-  source "#{netifaces}.tar.gz"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-  action :create_if_missing
-end
-
-ipy="IPy-0.81"
-cookbook_file "/tmp/#{ipy}.tar.gz" do
-  source "#{ipy}.tar.gz"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-  action :create_if_missing
-end
-
-pexpect="pexpect-2.3"
-cookbook_file "/tmp/#{pexpect}.tar.gz" do
-  source "#{pexpect}.tar.gz"
-  owner node["kagent"]["user"]
-  group node["kagent"]["user"]
-  mode 0755
-  action :create_if_missing
-end
-
-
-bash "install_python" do
-  user "root"
-  code <<-EOF
-  cd /tmp
-  tar zxf "#{bottle}.tar.gz"
-  cd #{bottle}
-  python setup.py install
-  cd ..
-  tar zxf "#{requests}.tar.gz"
-  cd #{requests}
-  python setup.py install
-  cd ..
-  tar zxf "#{cherry}.tar.gz"
-  cd #{cherry}
-  python setup.py install
-  cd ..
-  tar zxf "#{openSsl}.tar.gz"
-  cd #{openSsl}
-  python setup.py install
-  cd ..
-  tar zxf "#{netifaces}.tar.gz"
-  cd #{netifaces}
-  python setup.py install
-  cd ..
-  tar zxf "#{ipy}.tar.gz"
-  cd #{ipy}
-  python setup.py install
-  cd ..
-  tar zxf "#{pexpect}.tar.gz"
-  cd #{pexpect}
-  python setup.py install
-  touch /tmp/.python_libs_installed
- EOF
-  not_if "test -f /tmp/.python_libs_installed"
 end
 
 bash "make_gemrc_file" do

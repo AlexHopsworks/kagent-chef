@@ -742,7 +742,7 @@ class Authentication():
 
 class SSLCherryPy(ServerAdapter):  
     def run(self, handler):  
-        from cherrypy import wsgiserver  
+        import wsgiserver  
 
         # cherrypy.config.update({
         # 'environment': 'production',
