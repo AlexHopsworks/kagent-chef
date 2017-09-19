@@ -757,11 +757,11 @@ class SSLCherryPy(ServerAdapter):
         # 'tools.json_in.force': False,
         # })
 
-        server = wsgiserver.CherryPyWSGIServer((self.host, self.port), handler)  
+        server = wsgiserver.WSGIServer(handler, host=self.host, port=self.port)  
         # Certificate file. If a valid path, SSL will be used. Set to None to disable SSL  
         server.ssl_certificate = CERT_FILE
         server.ssl_private_key = KEY_FILE
-        # server.ssl_certificate_chain = 'ssl/bundle.crt'
+        #server.ssl_certificate_chain = CA_FILE
         try:  
             server.start()  
         finally:  
