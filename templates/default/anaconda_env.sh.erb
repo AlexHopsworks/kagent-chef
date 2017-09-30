@@ -46,14 +46,25 @@ if [ "$OP" == "CREATE" ] ; then
     su $EXEC_AS_USER -c -l "export HADOOP_HOME=$HADOOP_DIR && <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install pydoop" 
 
     su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade hopsutil" 
-    export PY=$(echo $PYTHON_VERSION | sed 's/\.//g') 
-    su $EXEC_AS_USER -c "<%= node['conda']['base_dir'] %>/envs/${PROJECT}/bin/pip install --upgrade <%= node['conda']['base_dir'] %>/pkgs/tensorflow-<%= node['tensorflow']['version'] %>-cp${PY}-cp${PY}mu-manylinux1_x86_64.whl"
+    export PY=$(echo $PYTHON_VERSION | sed 's/\.//g')
+
+    # If cuda is installed, and there is a GPU, install TF with GPUs
+    GPU=
+    if [ -f /usr/local/cuda/version.txt ]  ; then
+	nvidia-smi | grep NVID
+	if [ $? -eq 0 ] ; then
+            GPU="_gpu"
+	fi
+    fi
+    # Install a custom build of tensorflow with this line.
+    #    su $EXEC_AS_USER -c "<%= node['conda']['base_dir'] %>/envs/${PROJECT}/bin/pip install --upgrade <%= node['conda']['base_dir'] %>/pkgs/tensorflow${GPU}-<%= node['tensorflow']['version'] %>-cp${PY}-cp${PY}mu-manylinux1_x86_64.whl"
+    # 'pip install tensorflow' include HDFS support. 'conda install tensorflow-gpu' does not!
+    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade tensorflow"
     su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade tfspark" 
 
     if [ "<%= @jupyter_python %>" == "true" ] ; then 
       if [ $CREATE_PYTHON_KERNEL -eq 1 ] ; then 
         sudo <%= node["conda"]["base_dir"] %>/bin/python -m ipykernel install --prefix=<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/ --name "python-${PROJECT}"
-        #sudo <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/python -m ipykernel install --prefix=<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/ --name "python-${PROJECT}"
         if [ $? -eq 0 ] ; then
           sudo jupyter-kernelspec install <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/share/jupyter/kernels/python-${PROJECT}
         else

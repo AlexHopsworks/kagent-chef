@@ -114,4 +114,6 @@ default["certs"]["dir"]                            = node["install"]["dir"].empt
 
 default["tensorflow"]["version"]                   = "1.3.0"
 default["tensorflow"]["py36"]["url"]               = node["download_url"] + "/tensorflow-" + node["tensorflow"]["version"] + "-cp36-cp36m-manylinux1_x86_64.whl"
+default["tensorflow"]["py36_gpu"]["url"]           = node["download_url"] + "/tensorflow_gpu-" + node["tensorflow"]["version"] + "-cp36-cp36m-manylinux1_x86_64.whl"
 default["tensorflow"]["py27"]["url"]               = node["download_url"] + "/tensorflow-" + node["tensorflow"]["version"] + "-cp27-cp27mu-manylinux1_x86_64.whl"
+default["tensorflow"]["py27_gpu"]["url"]           = node["download_url"] + "/tensorflow_gpu-" + node["tensorflow"]["version"] + "-cp27-cp27mu-manylinux1_x86_64.whl"

@@ -32,6 +32,8 @@ import socket
 from os.path import exists, join
 import MySQLdb
 from bottle import Bottle, run, get, post, request, HTTPResponse, server_names, ServerAdapter, response
+from cheroot import wsgi
+from cheroot.ssl.builtin import BuiltinSSLAdapter
 import netifaces 
 from IPy import IP
 import pexpect
@@ -742,26 +744,8 @@ class Authentication():
 
 class SSLCherryPy(ServerAdapter):  
     def run(self, handler):  
-        import wsgiserver  
-
-        # cherrypy.config.update({
-        # 'environment': 'production',
-        # 'log.screen': False,
-        # 'log.access_file': "<%= node[:kagent][:base_dir] %>/access.log",
-        # 'log.error_file': "<%= node[:kagent][:base_dir] %>/error.log",
-        # 'server.socket_host': '0.0.0.0',
-        # 'server.socket_port': agent_restport,
-        # 'tools.caching.on': False,
-        # 'tools.encode.encoding': "utf-8",
-        # 'tools.json_in.on': True,
-        # 'tools.json_in.force': False,
-        # })
-
-        server = wsgiserver.WSGIServer(handler, host=self.host, port=self.port)  
-        # Certificate file. If a valid path, SSL will be used. Set to None to disable SSL  
-        server.ssl_certificate = CERT_FILE
-        server.ssl_private_key = KEY_FILE
-        #server.ssl_certificate_chain = CA_FILE
+        server = wsgi.Server((self.host, self.port), handler)
+        server.ssl_adapter = BuiltinSSLAdapter(CERT_FILE, KEY_FILE)
         try:  
             server.start()  
         finally:  

@@ -142,7 +142,6 @@ if node["kagent"].attribute?("hostname")
  hostname = node["kagent"]["hostname"]
 end
 
-
 hops_dir=node['install']['dir']
 if node.attribute?("hops") && node["hops"].attribute?("dir") 
 # Use versioned directory for hops
