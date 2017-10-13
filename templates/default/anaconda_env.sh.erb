@@ -14,14 +14,15 @@ PYTHON_VERSION=$4
 OFFLINE=$5
 HADOOP_DIR=$6
 CLONE=
-
+CONDA_DIR=<%= node["conda"]["base_dir"] %>
+WITH_PYTHON_KERNEL=<%= @jupyter_python %>
 
 if [ "$OP" == "CLONE" ] ; then
    CLONE="--clone $4"
 fi
 
 function exists() {
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda info --envs | grep '^${PROJECT} '"
+    su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda info --envs | grep '^${PROJECT} '"
     return $?
 }
 
@@ -31,65 +32,63 @@ if [ "$OP" == "CREATE" ] ; then
        exit 0
     fi
 
-    CREATE_PYTHON_KERNEL=1
     if [[ $PYTHON_VERSION =~ .*X ]] ; then
        PYTHON_VERSION=${PYTHON_VERSION::-1} # removes the 'X' at the end of the version
-       CREATE_PYTHON_KERNEL=0
+       WITH_PYTHON_KERNEL="false"
     fi
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda create -n $PROJECT python=$PYTHON_VERSION -y -q $OFFLINE"
+    su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda create -n $PROJECT python=$PYTHON_VERSION -y -q $OFFLINE"
     HADOOP_VERSION=$(echo $HADOOP_DIR | awk -F- '{print $NF}')
     echo "Hadoop dir is $HADOOP_DIR"
     echo "Hadoop version is $HADOOP_VERSION"
     export HADOOP_CONF_DIR=${HADOOP_DIR}/hadoop/etc
     export HADOOP_HOME=$HADOOP_DIR 
    #export HADOOP_VERSION=$HADOOP_VERSION;
-    su $EXEC_AS_USER -c -l "export HADOOP_HOME=$HADOOP_DIR && <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install pydoop" 
+    su $EXEC_AS_USER -c -l "export HADOOP_HOME=$HADOOP_DIR && ${CONDA_DIR}/envs/${PROJECT}/bin/pip install pydoop" 
 
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade hopsutil" 
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hopsutil" 
     export PY=$(echo $PYTHON_VERSION | sed 's/\.//g')
 
     # If cuda is installed, and there is a GPU, install TF with GPUs
     GPU=
     if [ -f /usr/local/cuda/version.txt ]  ; then
-	nvidia-smi | grep NVID
+	nvidia-smi -L | grep -i gpu
 	if [ $? -eq 0 ] ; then
-            GPU="_gpu"
+            GPU="-gpu"
 	fi
     fi
     # Install a custom build of tensorflow with this line.
     #    su $EXEC_AS_USER -c "<%= node['conda']['base_dir'] %>/envs/${PROJECT}/bin/pip install --upgrade <%= node['conda']['base_dir'] %>/pkgs/tensorflow${GPU}-<%= node['tensorflow']['version'] %>-cp${PY}-cp${PY}mu-manylinux1_x86_64.whl"
     # 'pip install tensorflow' include HDFS support. 'conda install tensorflow-gpu' does not!
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade tensorflow"
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/bin/pip install --upgrade tfspark" 
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade tensorflow${GPU}"
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade tfspark" 
+    #su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade ipython_kernel"
 
-    if [ "<%= @jupyter_python %>" == "true" ] ; then 
-      if [ $CREATE_PYTHON_KERNEL -eq 1 ] ; then 
-        sudo <%= node["conda"]["base_dir"] %>/bin/python -m ipykernel install --prefix=<%= node["conda"]["base_dir"] %>/envs/${PROJECT}/ --name "python-${PROJECT}"
-        if [ $? -eq 0 ] ; then
-          sudo jupyter-kernelspec install <%= node["conda"]["base_dir"] %>/envs/${PROJECT}/share/jupyter/kernels/python-${PROJECT}
-        else
-          echo "Problem creating Python jupyter kernel for this project ${PROJECT}"
-        fi	
-     fi
-   fi
+    
+#    if [ "${WITH_PYTHON_KERNEL}" == "true" ] ; then 
+#        sudo ${CONDA_DIR}/bin/python -m ipykernel install --prefix=${CONDA_DIR}/envs/${PROJECT}/ --name "python-${PROJECT}"
+#        if [ $? -eq 0 ] ; then
+#          sudo jupyter-kernelspec install ${CONDA_DIR}/envs/${PROJECT}/share/jupyter/kernels/python-${PROJECT}
+#        else
+#          echo "Problem creating Python jupyter kernel for this project ${PROJECT}"
+#        fi	
+#    fi
 
 elif [ "$OP" == "LIST_ENVS" ] ; then
-  su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda env list --json > /tmp/conda_envs.json"    
+  su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda env list --json > /tmp/conda_envs.json"    
 elif [ "$OP" == "LIST" ] ; then
-  su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda list -n $PROJECT --json > /tmp/${PROJECT}__conda_list.json"
+  su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda list -n $PROJECT --json > /tmp/${PROJECT}__conda_list.json"
 elif [ "$OP" == "CLONE" ] ; then
-  su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda create -n $PROJECT --clone $CLONE -y -q $OFFLINE"
+  su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda create -n $PROJECT --clone $CLONE -y -q $OFFLINE"
 elif [ "$OP" == "REMOVE" ] ; then
     exists    # If the env has already been removed, return OK
     if [ $? -ne 0 ] ; then
        echo "Cannot remove environment that doesn't exist"
        exit 0
     fi
-    su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda-env remove -n $PROJECT -y -q"
-    if [ "<%= @jupyter_python %>" == "true" ] ; then    
+    su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda-env remove -n $PROJECT -y -q"
+    if [ "${WITH_PYTHON_KERNEL}" == "true" ] ; then    
 	sudo jupyter-kernelspec remove -y python-${PROJECT}
     fi
 else
     exit -1
 fi
-

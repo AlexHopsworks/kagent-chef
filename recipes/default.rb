@@ -137,7 +137,7 @@ template "#{node["kagent"]["base_dir"]}/keystore.sh" do
 end
 
 # Default to hostname found in /etc/hosts, but allow user to override it.
-hostname = node['hostname']
+hostname = node['fqdn']
 if node["kagent"].attribute?("hostname") 
  hostname = node["kagent"]["hostname"]
 end

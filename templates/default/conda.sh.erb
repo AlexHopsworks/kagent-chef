@@ -58,7 +58,7 @@ elif [ "$OP" == "UPGRADE" ] ; then
 elif [ "$OP" == "UNINSTALL" ] ; then
   exists
   if [ $? -eq 0 ] ; then
-      su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda remove -n $PROJ -q -y $CHANNEL $LIB_NAME"
+      su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda remove -n $PROJECT -q -y $CHANNEL $LIB_NAME"
   fi
 else
   res=-5

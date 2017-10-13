@@ -5,18 +5,6 @@
 
 node.override["conda"]["accept_license"] = "yes"
 
-#
-# We would like to install anaconda as user 'glassfish' and then have kagent call it using a sudo script
-#
-
-if node.attribute?(:hops) and node["hops"].attribute?(:yarn) and node["hops"]["yarn"].attribute?(:user)
-  node.override["conda"]["user"] = node["hops"]["yarn"]["user"]
-end                             
-
-if node.attribute?(:hops) and node["hops"].attribute?(:group)
-  node.override["conda"]["group"] = node["hops"]["group"]
-end                             
-
 if node.attribute?(:install) and node["install"].attribute?(:dir) and node["install"]["dir"].empty? == false
   node.override["conda"]["dir"] = node["install"]["dir"]
 end  
