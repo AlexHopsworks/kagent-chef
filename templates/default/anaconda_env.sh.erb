@@ -45,7 +45,7 @@ if [ "$OP" == "CREATE" ] ; then
    #export HADOOP_VERSION=$HADOOP_VERSION;
     su $EXEC_AS_USER -c -l "export HADOOP_HOME=$HADOOP_DIR && ${CONDA_DIR}/envs/${PROJECT}/bin/pip install pydoop" 
 
-    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hopsutil" 
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hops"
     export PY=$(echo $PYTHON_VERSION | sed 's/\.//g')
 
     # If cuda is installed, and there is a GPU, install TF with GPUs
