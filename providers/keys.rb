@@ -2,8 +2,10 @@ action :csr do
 
   bash "sign-local-csr-key" do
     user "root"
+    retries 4
+    timeout 300
     code <<-EOF
-      set -eo pipefail 
+      set -eo pipefail
       export PYTHON_EGG_CACHE=/tmp
       #{node["kagent"]["certs_dir"]}/csr.py
   EOF
