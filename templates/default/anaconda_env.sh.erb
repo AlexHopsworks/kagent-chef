@@ -45,6 +45,7 @@ if [ "$OP" == "CREATE" ] ; then
     export HADOOP_VERSION=$HADOOP_VERSION;
     su $EXEC_AS_USER -c -l "export HADOOP_HOME=$HADOOP_DIR && ${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade pydoop" 
 
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hopsfacets" 
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hops"
     export PY=$(echo $PYTHON_VERSION | sed 's/\.//g')
 
@@ -63,6 +64,9 @@ if [ "$OP" == "CREATE" ] ; then
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade tfspark" 
     #su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade ipython_kernel"
 
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install pandas"
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install numpy"
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install protobuf"        
     
 #    if [ "${WITH_PYTHON_KERNEL}" == "true" ] ; then 
 #        sudo ${CONDA_DIR}/bin/python -m ipykernel install --prefix=${CONDA_DIR}/envs/${PROJECT}/ --name "python-${PROJECT}"
