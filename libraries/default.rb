@@ -21,6 +21,27 @@ module Kagent
       return dns_lookup(ip)
     end
 
+    def setup_aws()
+      bash 'setup_aws' do
+        user 'ubuntu'
+        cwd ::File.dirname("/srv")
+        code <<-EOH
+          sudo umount /dev/xvdb
+          sudo mkdir /srv/hops
+          sudo chown ubuntu:ubuntu /srv/hops
+          sudo mount /dev/xvdb /srv/hops
+ 
+          sudo mv /tmp /tmp.old
+          sudo mkdir /tmp
+          sudo mount /dev/xvdc /tmp
+          sudo chmod 1777 /tmp
+          sudo cp -r /tmp.old /tmp
+          sudo touch "/srv/complete"
+        EOH
+        not_if { ::File.exist?("/srv/complete") }
+      end
+    end
+ 
     def hops_groups()
       group node["kagent"]["certs_group"] do
         action :create
