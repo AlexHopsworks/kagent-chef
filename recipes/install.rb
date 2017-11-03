@@ -1,5 +1,7 @@
 # ubuntu python-mysqldb package install only works if we first run "apt-get update; apt-get upgrade"
 
+setup_aws()
+
 case node["platform_family"]
 when "debian"
   bash "apt_update_install_build_tools" do
