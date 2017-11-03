@@ -43,9 +43,8 @@ if [ "$OP" == "CREATE" ] ; then
     export HADOOP_CONF_DIR=${HADOOP_DIR}/hadoop/etc
     export HADOOP_HOME=$HADOOP_DIR 
     export HADOOP_VERSION=$HADOOP_VERSION;
-    su $EXEC_AS_USER -c -l "export HADOOP_HOME=$HADOOP_DIR && ${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade pydoop" 
-
-    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hopsfacets" 
+    su $EXEC_AS_USER -c -l "export HADOOP_HOME=$HADOOP_DIR && ${CONDA_DIR}/envs/${PROJECT}/bin/pip install pydoop" 
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hopsfacets"
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade hops"
     export PY=$(echo $PYTHON_VERSION | sed 's/\.//g')
 
@@ -60,10 +59,10 @@ if [ "$OP" == "CREATE" ] ; then
     # Install a custom build of tensorflow with this line.
 #    su $EXEC_AS_USER -c "<%= node['conda']['base_dir'] %>/envs/${PROJECT}/bin/pip install --upgrade <%= node['conda']['base_dir'] %>/pkgs/tensorflow${GPU}-<%= node['tensorflow']['version'] %>-cp${PY}-cp${PY}mu-manylinux1_x86_64.whl"
     # 'pip install tensorflow' include HDFS support. 'conda install tensorflow-gpu' does not!
-    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade tensorflow${GPU}"
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install tensorflow${GPU}==#{node['tensorflow']['version']}"
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade tfspark" 
-    #su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install --upgrade ipython_kernel"
 
+    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install ipython_kernel"
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install pandas"
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install numpy"
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install protobuf"        
