@@ -39,6 +39,7 @@ from IPy import IP
 import pexpect
 import re
 from collections import defaultdict
+import io
 
 global mysql_process
 mysql_process = None
@@ -813,7 +814,7 @@ class Conda():
         global block_report
         script = BIN_DIR + "/anaconda_env.sh"
         try:
-            msg = subprocess.check_output(['sudo', script, 'glassfish', "LIST_ENVS", "", ""])
+            msg = subprocess.check_output(['sudo', script, "<%= node['conda']['user'] %>", "LIST_ENVS", "", ""])
         except Exception as err:
             res=1
             logger.warn("Could not list conda environments to do a block report. Err: ".format(err))
@@ -859,6 +860,12 @@ class Conda():
                     arg=data['arg']
                 if op == "REMOVE" or op == "CLONE" or op == "CREATE":
                     self.envOp(user, command_id, op, proj, arg, "")
+                if op == "LIB_SYNC":
+                    arg=data['lib']
+                    # open with 'w+' to overwrite the file if it exists
+                    with io.open('/tmp/' + proj + '_server.json', 'w+', encoding='utf-8') as outfile:
+                        json.dumps(arg, outfile, ensure_ascii=False)                    
+                    self.envOp(user, command_id, op, proj, arg, "")                    
                 else:  # Conda package  commands (install, remove, upgrade)
                     version = data['version']
                     channelUrl = data['channelUrl']

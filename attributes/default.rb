@@ -54,7 +54,7 @@ default["kagent"]["watch_interval"]                = 2
 default["kagent"]["pid_file"]                      = node["kagent"]["base_dir"] + "/kagent.pid"
 default["kagent"]["logging_level"]                 = "INFO"
 default["kagent"]["max_log_size"]                  = "10000000"
-default["kagent"]["env_report_freq_in_secs"]       = "3600"
+default["kagent"]["env_report_freq_in_secs"]       = "86400"  # Synchronize libraries with Hopsworks once per day
 
 default["kagent"]["network"]["interface"]          = ""
 

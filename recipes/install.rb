@@ -9,7 +9,16 @@ when "debian"
 #   apt-get -f upgrade -y 
    apt-get install build-essential -y 
    apt-get install libssl-dev -y 
+   apt-get install jq -y 
  EOF
+  end
+
+# Change lograte policy
+  cookbook_file '/etc/logrotate.d/rsyslog' do
+    source 'rsyslog.ubuntu'
+    owner 'root'
+    group 'root'
+    mode '0644'
   end
 
 #  package "python-openssl" eo
@@ -50,6 +59,17 @@ when "rhel"
   end
   package "python-lxml" do 
     action :install
+  end
+  package "jq" do
+    action :install
+  end
+
+  # Change lograte policy
+  cookbook_file '/etc/logrotate.d/syslog' do
+    source 'syslog.centos'
+    owner 'root'
+    group 'root'
+    mode '0644'
   end
 end
 

@@ -67,21 +67,39 @@ if [ "$OP" == "CREATE" ] ; then
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install numpy"
     su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install protobuf"        
     
-#    if [ "${WITH_PYTHON_KERNEL}" == "true" ] ; then 
-#        sudo ${CONDA_DIR}/bin/python -m ipykernel install --prefix=${CONDA_DIR}/envs/${PROJECT}/ --name "python-${PROJECT}"
-#        if [ $? -eq 0 ] ; then
-#          sudo jupyter-kernelspec install ${CONDA_DIR}/envs/${PROJECT}/share/jupyter/kernels/python-${PROJECT}
-#        else
-#          echo "Problem creating Python jupyter kernel for this project ${PROJECT}"
-#        fi	
-#    fi
-
 elif [ "$OP" == "LIST_ENVS" ] ; then
   su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda env list --json > /tmp/conda_envs.json"    
+
 elif [ "$OP" == "LIST" ] ; then
   su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda list -n $PROJECT --json > /tmp/${PROJECT}__conda_list.json"
+
 elif [ "$OP" == "CLONE" ] ; then
   su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda create -n $PROJECT --clone $CLONE -y -q $OFFLINE"
+
+elif [ "$OP" == "LIB_SYNC" ] ; then
+
+    su <%= node['conda']['user'] %> -c "<%= node['conda']['base_dir'] %>/bin/conda list -n $1 --json > /tmp/${1}.json"
+    if [ $? -ne 0 ] ; then
+	echo "Problem listing conda libraries for project $1"
+	exit 2
+    fi 
+    arr=( $(jq -r '.[].dist_name' /tmp/${1}.json) )
+    printf '%s ' "${arr[@]}" > /tmp/${1}.libs
+
+    # kagent has to take the one big json object and save it locally as one json object per project.
+    server_libs=( $(jq -r  '.[].library' /tmp/${1}_server.json) )
+
+    # For all the libs installed in Hopsworks, check each one is installed in the local conda environment
+    #for i in "${arr[@]}"
+    for i in "${server_libs[@]}"
+    do
+	# If i cannot find the library installed locally, install it in this project
+	grep $i /tmp/${1}.libs
+	if [ $? -ne 0 ] ; then
+	    su <%= node['conda']['user'] %> -c "<%= node['conda']['base_dir'] %>/bin/conda install -n $1 -q -y $2 $i"
+	fi
+    done
+    
 elif [ "$OP" == "REMOVE" ] ; then
     exists    # If the env has already been removed, return OK
     if [ $? -ne 0 ] ; then
@@ -92,6 +110,7 @@ elif [ "$OP" == "REMOVE" ] ; then
     if [ "${WITH_PYTHON_KERNEL}" == "true" ] ; then    
 	sudo jupyter-kernelspec remove -y python-${PROJECT}
     fi
+
 else
     exit -1
 fi
