@@ -48,7 +48,7 @@ res=0
 if [ "$OP" == "INSTALL" ] ; then
   exists
   if [ $? -ne 0 ] ; then
-      su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda install -n $PROJECT -q -y $CHANNEL $LIB"
+      su $EXEC_AS_USER -c "<%= node["conda"]["base_dir"] %>/bin/conda install -n $PROJECT --use-index-cache -q -y $CHANNEL $LIB"
   fi
 elif [ "$OP" == "UPGRADE" ] ; then
   exists
