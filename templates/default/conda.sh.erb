@@ -4,9 +4,11 @@
 # conda $1 -n $2 -c [$3] $4 [$5]
 
 if [[ $# -lt 5 || $# -gt 6 ]]; then
- echo "incorrect usage"
- exit 1
+  echo "incorrect usage"
+  echo "user op proj conda_channel libname [version]"
+  exit 1
 fi
+
 VERSION=""
 if [ $# -eq 6  ]; then
   VERSION="=${6}"
@@ -21,18 +23,18 @@ shift
 CHANNEL=
 # default channel_alias  is http://conda.anaconda.org/.
 if [ "$1" != "default" ] ; then
-  CHANNEL="-c $1 --override-channels"
+    #  CHANNEL="-c $1 --override-channels"
+  CHANNEL="-c $1"    
 fi
 shift
 # Name of virtualenv python dependency
-#PACKAGES="$@"
 LIB_NAME=$1
 
 #No versions allowed with upgrade
 if [ "$OP" == "UPGRADE" ] ; then
   VERSION=""
 fi    
-LIB="${1}${VERSION}"
+LIB="${LIB_NAME}${VERSION}"
 
 
 function exists() {

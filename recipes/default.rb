@@ -144,12 +144,11 @@ end
 
 hops_dir=node['install']['dir']
 if node.attribute?("hops") && node["hops"].attribute?("dir") 
-# Use versioned directory for hops
-  hops_dir=node['hops']['dir'] + "/hadoop-2.8.2"
+  hops_dir=node['hops']['dir'] + "/hadoop"
 end
 if hops_dir == "" 
  # Guess that it is the default value
- hops_dir = "/srv/hops/hadoop-2.8.2"
+ hops_dir = node['install']['dir'] + "/hadoop"
 end
 #
 # use :create_if_missing, as if there is a failure during/after the csr.py program,
