@@ -1,5 +1,9 @@
 service_name = "kagent"
 
+agent_password = ""
+if node["kagent"]["password"].empty? == false
+ agent_password = "password = #{node["kagent"]["password"]}"
+end
 
 case node[:platform]
 when "ubuntu"
@@ -150,6 +154,8 @@ if hops_dir == ""
  # Guess that it is the default value
  hops_dir = node['install']['dir'] + "/hadoop"
 end
+
+                   
 #
 # use :create_if_missing, as if there is a failure during/after the csr.py program,
 # you will get a failure. csr.py adds a password entry to the [agent] section. 
@@ -168,7 +174,8 @@ template "#{node["kagent"]["base_dir"]}/config.ini" do
               :private_ip => private_ip,
               :hostname => hostname,
               :network_if => network_if,
-              :hops_dir => hops_dir
+              :hops_dir => hops_dir,
+              :agent_password => agent_password
             })
 if node["services"]["enabled"] == "true"  
   notifies :enable, "service[#{service_name}]"

@@ -60,6 +60,7 @@ default["kagent"]["network"]["interface"]          = ""
 
 default["kagent"][:default][:public_ips]              = ['10.0.2.15']
 default["kagent"][:default][:private_ips]             = ['10.0.2.15']
+default["kagent"][:default][:gateway_ips]             = ['10.0.2.2']
 
 # services file contains locally installed services
 
@@ -72,10 +73,13 @@ default["kagent"]["hostid"]                        = 100
 
 default["kagent"]["hostname"]                      =
 
+default["kagent"]["password"]                      = ""
+  
 default["kagent"]["keystore_dir"] 		   = node["kagent"]["certs_dir"] + "/keystores"
 
 default["public_ips"]                              = ['10.0.2.15']
 default["private_ips"]                             = ['10.0.2.15']
+default["gateway_ips"]                             = ['10.0.2.2']
 default["kagent"]["allow_ssh_access"]              = "false"
 
 node.default["download_url"]                       = "http://193.10.67.171/hops"

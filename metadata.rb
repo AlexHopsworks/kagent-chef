@@ -60,6 +60,10 @@ attribute "kagent/name",
           :description => "Cookbook name",
           :type => 'string'
 
+attribute "kagent/password",
+          :description => "Agent's password - needed to call REST APIs on the kagent",
+          :type => 'string'
+
 attribute "kagent/rest_api/user",
           :description => "kagent REST API username",
           :type => "string"

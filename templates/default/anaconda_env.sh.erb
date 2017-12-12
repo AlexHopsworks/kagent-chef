@@ -13,6 +13,7 @@ PROJECT=$3
 PYTHON_VERSION=$4
 OFFLINE=$5
 HADOOP_DIR=$6
+
 CLONE=
 CONDA_DIR=<%= node["conda"]["base_dir"] %>
 WITH_PYTHON_KERNEL=<%= @jupyter_python %>
@@ -50,6 +51,10 @@ if [ "$OP" == "CREATE" ] ; then
 	nvidia-smi -L | grep -i gpu
 	if [ $? -eq 0 ] ; then
             GPU="-gpu"
+            su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip uninstall tensorflow"
+	    if [ $? -ne 0 ] ; then
+		echo "Problem uninstalling tensorflow to prepare for gpu version"
+	    fi
 	fi
     fi
     export PY=$(echo $PYTHON_VERSION | sed 's/\.//g')
@@ -66,7 +71,6 @@ if [ "$OP" == "CREATE" ] ; then
       su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/pip install ipykernel"
       su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install pandas"
       su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install numpy"
-      #    su $EXEC_AS_USER -c "${CONDA_DIR}/envs/${PROJECT}/bin/conda install protobuf"
     fi
     
 elif [ "$OP" == "LIST_ENVS" ] ; then
@@ -84,7 +88,11 @@ elif [ "$OP" == "LIB_SYNC" ] ; then
     if [ $? -ne 0 ] ; then
 	echo "Problem listing conda libraries for project $1"
 	exit 2
-    fi 
+    fi
+    if [ ! -f /tmp/${1}.json ] ; then
+	echo "Problem finding fil with list of conda libraries for project $1"
+	exit 2
+    fi
     arr=( $(jq -r '.[].dist_name' /tmp/${1}.json) )
     printf '%s ' "${arr[@]}" > /tmp/${1}.libs
 
@@ -110,7 +118,7 @@ elif [ "$OP" == "REMOVE" ] ; then
     fi
     su $EXEC_AS_USER -c "${CONDA_DIR}/bin/conda-env remove -n $PROJECT -y -q"
     if [ "${WITH_PYTHON_KERNEL}" == "true" ] ; then    
-	sudo jupyter-kernelspec remove -y python-${PROJECT}
+	sudo jupyter-kernelspec remove -y python-${PROJECT} || 0
     fi
 
 else
