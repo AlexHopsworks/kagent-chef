@@ -348,31 +348,36 @@ class Alert:
     @staticmethod    
     def send(cluster, service, role, time, status):
         global session
-        try:
-            headers = {'content-type': 'application/json'}
-            payload = {}
-            payload["Provider"] = "Agent"            
-            payload["host-id"] = host_id
-            payload["Time"] = time
-            payload["Plugin"] = "Monitoring"
-            payload["Type"] = "Role"
-            payload["TypeInstance"] = "{0}/{1}/{2}".format(cluster, service, role)
-            payload["DataSource"] = "Agent"
-            payload["CurrentValue"] = status
-            if status == True:
-                payload["Severity"] = "OK"
-                payload["Message"] = "Role is running: {0}/{1}/{2}".format(cluster, service, role)
-            else:
-                payload["Severity"] = "FAILURE"
-                payload["Message"] = "Role is not running: {0}/{1}/{2}".format(cluster, service, role)
-            
-            logger.info("Sending Alert...")
-            auth = (server_username, server_password)
-#            session = requests.Session()
-#            session.post(alert_url, data=json.dumps(payload), headers=headers, auth=auth, verify=False)        
-            requests.post(alert_url, data=json.dumps(payload), headers=headers, auth=auth, verify=False)        
-        except:
-            logger.error("Cannot access the REST service for alerts. Alert not sent.")
+        if not logged_in:
+           logger.info('Logging in to Hopsworks....')
+           Heartbeat.login()
+        else:
+            try:
+                headers = {'content-type': 'application/json'}
+                payload = {}
+                payload["Provider"] = "Agent"            
+                payload["host-id"] = host_id
+                payload["Time"] = time
+                payload["Plugin"] = "Monitoring"
+                payload["Type"] = "Role"
+                payload["TypeInstance"] = "{0}/{1}/{2}".format(cluster, service, role)
+                payload["DataSource"] = "Agent"
+                payload["CurrentValue"] = status
+                if status == True:
+                    payload["Severity"] = "OK"
+                    payload["Message"] = "Role is running: {0}/{1}/{2}".format(cluster, service, role)
+                else:
+                    payload["Severity"] = "FAILURE"
+                    payload["Message"] = "Role is not running: {0}/{1}/{2}".format(cluster, service, role)
+                    
+                logger.info("Sending Alert...")
+                #auth = (server_username, server_password)
+                #            session = requests.Session()
+                #            session.post(alert_url, data=json.dumps(payload), headers=headers, auth=auth, verify=False)        
+                #requests.post(alert_url, data=json.dumps(payload), headers=headers, auth=auth, verify=False)
+                session.post(alert_url, data=json.dumps(payload), headers=headers, verify=False)
+            except:
+                logger.error("Cannot access the REST service for alerts. Alert not sent.")
 
             
 class MemoryInfo(object):
