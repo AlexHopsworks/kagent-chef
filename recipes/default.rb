@@ -8,6 +8,31 @@ when "ubuntu"
  end
 end
 
+
+#
+# Hack because of a problem with Cheroot 
+#
+bash "reinstall_backports_functools" do
+  user 'root'
+  ignore_failure true
+  code <<-EOF
+  yes | pip uninstall backports.functools_lru_cache
+  yes | pip install backports.functools_lru_cache
+ EOF
+end
+
+#
+# Hack because of a problem with Cheroot 
+#
+bash "reinstall_backports_functools" do
+  user 'root'
+  ignore_failure true
+  code <<-EOF
+  yes | pip uninstall backports.functools_lru_cache
+  yes | pip install backports.functools_lru_cache
+ EOF
+end
+
 if node[:systemd] == "true"
   service "#{service_name}" do
     provider Chef::Provider::Service::Systemd
