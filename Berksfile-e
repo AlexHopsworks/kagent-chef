@@ -5,6 +5,6 @@ metadata
 cookbook 'openssl', '~> 4.4.0'
 cookbook 'hostsfile', '~> 2.4.5'
 cookbook 'ntp', '~> 2.0.0'
-cookbook 'conda', github: "AlexHopsworks/conda-chef", branch: "HS-738_test"
+cookbook 'conda', github: "AlexHopsworks/conda-chef", branch: "master"
 
 cookbook 'magic_shell'
